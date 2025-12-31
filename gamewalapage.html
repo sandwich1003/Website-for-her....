@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fun Game!</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: linear-gradient(to bottom, #ffe6f2, #fff); color: #333; text-align: center; padding: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        img { max-width: 300px; border-radius: 10px; margin: 20px 0; cursor: pointer; transition: transform 0.3s; }
+        img:hover { transform: scale(1.05); }
+        .note { font-style: italic; font-size: 1.2em; margin: 20px 0; }
+        footer { margin-top: 40px; font-size: 0.8em; color: #666; }
+        #popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 2px solid #ff69b4; border-radius: 10px; }
+        button { padding: 10px; margin: 10px; background: #ff69b4; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .board { display: grid; grid-template-columns: repeat(3, 100px); gap: 5px; margin: 20px auto; }
+        .cell { width: 100px; height: 100px; background: #fff; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 2em; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Fun Tic-Tac-Toe Game!</h2>
+        <p class="note">Play Tic-Tac-Toe! You are X, computer is O. </p>
+        <div class="board" id="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        <button onclick="resetGame()">Play Again</button>
+        <div id="popup">
+            <p>Go to another page!</p>
+            <button onclick="window.location.href='finalpage.html'">Click here</button>
+        </div>
+        <footer>Made with love and cats.</footer>
+    </div>
+    <script>
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = 'X';
+        let gameOver = false;
+        let gameCount = 0; // Track games: 0 = first (lose), 1 = second (win)
+        const cells = document.querySelectorAll('.cell');
+
+        cells.forEach(cell => {
+            cell.addEventListener('click', handleClick);
+        });
+
+        function handleClick(e) {
+            if (gameOver) return;
+            const index = e.target.dataset.index;
+            if (board[index] !== '') return;
+            board[index] = currentPlayer;
+            e.target.textContent = currentPlayer;
+            if (checkWin()) {
+                if (gameCount === 1) { // Second game, player wins
+                    document.getElementById('popup').style.display = 'block';
+                } else {
+                    alert('You lost! Play again.');
+                    resetGame();
+                }
+                gameOver = true;
+                return;
+            }
+            currentPlayer = 'O';
+            setTimeout(computerMove, 500);
+        }
+
+        function computerMove() {
+            if (gameOver) return;
+            let move;
+            if (gameCount === 0) { // First game: computer wins
+                move = getWinningMove('O') || getWinningMove('X') || [0,1,2,3,4,5,6,7,8].find(i => board[i] === '');
+            } else { // Second game: let player win
+                move = [0,1,2,3,4,5,6,7,8].find(i => board[i] === '');
+            }
+            if (move !== undefined) {
+                board[move] = 'O';
+                cells[move].textContent = 'O';
+                if (checkWin()) {
+                    if (gameCount === 0) {
+                        alert('Computer wins! Play again.');
+                        resetGame();
+                    }
+                    gameOver = true;
+                    return;
+                }
+                currentPlayer = 'X';
+            }
+        }
+
+        function checkWin() {
+            const winPatterns = [
+                [0,1,2], [3,4,5], [6,7,8],
+                [0,3,6], [1,4,7], [2,5,8],
+                [0,4,8], [2,4,6]
+            ];
+            return winPatterns.some(pattern => {
+                return pattern.every(index => board[index] === currentPlayer);
+            });
+        }
+
+        function getWinningMove(player) {
+            const winPatterns = [
+                [0,1,2], [3,4,5], [6,7,8],
+                [0,3,6], [1,4,7], [2,5,8],
+                [0,4,8], [2,4,6]
+            ];
+            for (let pattern of winPatterns) {
+                const [a, b, c] = pattern;
+                if (board[a] === player && board[b] === player && board[c] === '') return c;
+                if (board[a] === player && board[c] === player && board[b] === '') return b;
+                if (board[b] === player && board[c] === player && board[a] === '') return a;
+            }
+            return null;
+        }
+
+        function resetGame() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            cells.forEach(cell => cell.textContent = '');
+            currentPlayer = 'X';
+            gameOver = false;
+            gameCount++;
+            if (gameCount > 1) gameCount = 1; // Only two games
+        }
+    </script>
+	<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script><script>confetti();</script>
+</body>
+</html>
